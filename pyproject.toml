@@ -1,0 +1,51 @@
+[build-system]
+requires = [ "setuptools>=61" ]
+
+[project]
+name = "pero-indexer"
+version = "0.0.1"
+# description = "Toolkit for advanced OCR of poor quality documents"
+readme = "README.md"
+requires-python = ">=3.6"
+license = {file = "LICENSE"}
+# keywords = ["OCR", "Layout analysis", "handwriting recognition"]
+
+authors = [
+  {email = "hradis@fit.vutbr.cz", name = "Michal Hradiš"}
+]
+
+classifiers=[
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "pero-ocr",
+    "pandas",
+    "transformers",
+    "whoosh",
+]
+
+
+# [project.urls]
+# homepage = "https://pero.fit.vutbr.cz/"
+# repository = "https://github.com/DCGM/pero-ocr"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.package-dir]
+"pero_indexer" = "src"
+
+[project.scripts]
+preprocess-library-db = "pero_indexer.library_cards.filter_bib_db:main"
+build-db-index = "pero_indexer.library_cards.index_build_bib:main"
+match-cards-to-db = "pero_indexer.library_cards.matching_cards:main"
+
+preprocess-alignment = "pero_indexer.alignment.preprocess:main"
+align-records = "pero_indexer.alignment.align_levenshtein:main"
+postprocess-alignment = "pero_indexer.alignment.merge_alignment_annotations:main"
+
+train-aligner = "pero_indexer.NER.train:main"
+run-aligner = "pero_indexer.NER.inference:main"
