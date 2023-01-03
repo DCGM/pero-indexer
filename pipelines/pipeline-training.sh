@@ -24,9 +24,9 @@ ocr_xml_dir="$work_dir/xml"
 logits_dir="$work_dir/logits"
 transcriptions_file="$work_dir/trancription"
 
-if [ "$stage" -le 2 ]
+if [ "$stage" -le 1 ]
 then
-    echo "== Stage 2 =="
+    echo "== Stage 1 =="
     mkdir -p $ocr_xml_dir
     mkdir -p $logits_dir
 
@@ -42,17 +42,17 @@ fi
 
 db_pickle=$work_dir/db.pickle
 
-if [ "$stage" -le 3 ]
+if [ "$stage" -le 2 ]
 then
-    echo "== Stage 3 =="
+    echo "== Stage 2 =="
     preprocess-library-db $db_pickle < "$db_file" || exit 1
 fi
 
 db_index_dir=$work_dir/index
 
-if [ "$stage" -le 4 ]
+if [ "$stage" -le 3 ]
 then
-    echo "== Stage 4 =="
+    echo "== Stage 3 =="
     build-db-index \
         --bib-pickle $db_pickle \
         --index-dir $db_index_dir || exit 1
@@ -67,9 +67,9 @@ fi
 
 match_file=$work_dir/mapping.txt
 
-if [ "$stage" -le 5 ]
+if [ "$stage" -le 4 ]
 then
-    echo "== Stage 5 =="
+    echo "== Stage 4 =="
     match-cards-to-db \
         --logging-level INFO \
         --index-dir $db_index_dir \
@@ -82,9 +82,9 @@ fi
 cleaned_db_dir=$work_dir/cleaned-db
 mkdir $cleaned_db_dir
 
-if [ "$stage" -le 6 ]
+if [ "$stage" -le 5 ]
 then
-    echo "== Stage 6 =="
+    echo "== Stage 5 =="
     preprocess-alignment \
         --db-file $db_file \
         --mapping $match_file \
@@ -94,9 +94,9 @@ fi
 alignment_dir=$work_dir/alignments
 alignment_all=$work_dir/alignment_all.txt
 
-if [ "$stage" -le 7 ]
+if [ "$stage" -le 6 ]
 then
-    echo "== Stage 7 =="
+    echo "== Stage 6 =="
     align-records \
         --db-record $cleaned_db_dir \
         --transcription $ocr_xml_dir \
@@ -109,9 +109,9 @@ then
 fi
 
 train_test=$work_dir/alignment_full.txt
-if [ "$stage" -le 8 ]
+if [ "$stage" -le 7 ]
 then
-    echo "== Stage 8 =="
+    echo "== Stage 7 =="
     postprocess-alignment \
         --alignments-dir $alignment_dir \
         --output $train_test \
@@ -119,34 +119,29 @@ then
 
 fi
 
-
-bert_path=/mnt/matylda5/ibenes/projects/pero/MZK-sw/work/bert-base-multilingual-uncased-sentiment
-
-checkpoint_dir=$work_dir/checkpoints
-
-mkdir -p $checkpoint_dir
-
-pretrained_url=https://huggingface.co/bert-base-cased
+pretrained_url=https://huggingface.co/bert-base-multilingual-uncased
 pretrained_model_dir=$work_dir/pretrained_model
+
+if [ "$stage" -le 8 ]
+then
+    echo "== Stage 8 == [This stage requires internet access]"
+    git lfs clone $pretrained_url $pretrained_model_dir || exit 1
+fi
+
+bert_path=$work_dir/bert-base-multilingual-uncased-sentiment
+ner_model=$work_dir/ner_model
 
 if [ "$stage" -le 9 ]
 then
-    echo "== Stage 9 == [This stage requires internet access]"
-    git lfs clone $pretrained_url $pretrained_model_dir
-fi
-
-ner_model=$work_dir/ner_model
-if [ "$stage" -le 10 ]
-then
-    echo "== Stage 10 == [This stage requires GPU access]"
+    echo "== Stage 9 == [This stage requires GPU access]"
     export TRANSFORMER_OFFLINE=1
     train-aligner \
         --epochs 5 \
         --batch-size 32 \
         --lr 3e-5\
         --sep \
-        --bert-path $bert_path \
-        --tokenizer-path $bert_path \
+        --bert-path $pretrained_model_dir \
+        --tokenizer-path $pretrained_model_dir \
         --save-path $ner_model \
         --save-tokenizer \
         --ocr-path $ocr_xml_dir \
