@@ -109,6 +109,9 @@ then
 fi
 
 train_test=$work_dir/alignment_full.txt
+train_data=$work_dir/alignment.train
+valid_data=$work_dir/alignment.valid
+test_data=$work_dir/alignment.test
 if [ "$stage" -le 7 ]
 then
     echo "== Stage 7 =="
@@ -116,6 +119,14 @@ then
         --alignments-dir $alignment_dir \
         --output $train_test \
         || exit 1
+
+    nb_tot_lines=$(wc -l < $train_test)
+    nb_train_lines=$(/usr/bin/printf %d $(bc -l <<< "$nb_tot_lines * 0.8") 2>/dev/null)
+    nb_val_lines=$(/usr/bin/printf %d $(bc -l <<< "$nb_tot_lines * 0.1") 2>/dev/null)
+
+    head -n "$nb_train_lines" < $train_test >$train_data
+    tail -n "$(( nb_val_lines * 2 ))" < $train_test | head -n "$nb_val_lines"  >$valid_data
+    tail -n "$nb_val_lines" < $train_test >$test_data
 
 fi
 
@@ -134,21 +145,25 @@ ner_model=$work_dir/ner_model
 if [ "$stage" -le 9 ]
 then
     echo "== Stage 9 == [This stage requires GPU access]"
+
+    nb_epochs=8
+
     export TRANSFORMER_OFFLINE=1
     train-aligner \
-        --epochs 5 \
+        --epochs "$nb_epochs" \
         --batch-size 32 \
-        --lr 3e-5\
         --sep \
         --bert-path $pretrained_model_dir \
         --tokenizer-path $pretrained_model_dir \
         --save-path $ner_model \
         --save-tokenizer \
         --ocr-path $ocr_xml_dir \
-        --train-path $train_test \
-        --val-path $train_test \
-        --test-path $train_test \
+        --train-path $train_data \
+        --val-path $valid_data \
+        --test-path $test_data \
         || exit 1
 
-    ln -s $ner_model/checkpoint_005.pth $ner_model/checkpoint_final.pth
+    last_checkpoint_name=$(printf checkpoint_%03d.pth $nb_epochs)
+
+    ln -f -s $last_checkpoint_name $ner_model/checkpoint_final.pth
 fi

@@ -244,19 +244,16 @@ def calculate_confidence(logits):
     return torch.nn.functional.softmax(logits, dim=2).cpu().numpy().max(axis=2).flatten()
 
 
-def build_tokenizer(path: str, model_config: ModelConfig=ModelConfig()):
-    # Creating raw tokenizer
-    if path == BERT_BASE_NAME:
-        tokenizer = BertTokenizerFast.from_pretrained(BERT_BASE_NAME)
+def build_tokenizer(path: str, model_config: ModelConfig=ModelConfig(), add_special=False):
+    tokenizer = BertTokenizerFast.from_pretrained(path)
+
+    if add_special:
         tokenizer.add_special_tokens({"additional_special_tokens": [JOKER]})
 
         if model_config.sep:
             tokenizer.add_special_tokens({"additional_special_tokens": [LINE_SEPARATOR]})
-            
-        return tokenizer
 
-    # Loading existing tokenizer
-    return BertTokenizerFast.from_pretrained(path)
+    return tokenizer
 
 
 def offsets_to_io(text: str, alignments, sep: bool = False):
