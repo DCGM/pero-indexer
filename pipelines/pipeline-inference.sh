@@ -55,11 +55,23 @@ final_output="$work_dir/output"
 
 if [ "$stage" -le 2 ]
 then
+    export TRANSFORMER_OFFLINE=1
     run-aligner \
         --data-path "$ocr_txt_dir" \
         --config-path "$bert_dir" \
         --model-path "$bert_dir/checkpoint_final.pth" \
         --tokenizer-path "$bert_dir" \
         --save-path "$final_output" \
+        || exit 1
+fi
+
+readable_output="$work_dir/readable_output"
+
+if [ "$stage" -le 3 ]
+then
+    get-readable-output \
+        --dataset "$final_output/dataset.all" \
+        --ocr "$ocr_txt_dir" \
+        --out "$readable_output" \
         || exit 1
 fi

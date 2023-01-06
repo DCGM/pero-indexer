@@ -49,3 +49,4 @@ postprocess-alignment = "pero_indexer.alignment.merge_alignment_annotations:main
 
 train-aligner = "pero_indexer.NER.train:main"
 run-aligner = "pero_indexer.NER.inference:main"
+get-readable-output = "pero_indexer.NER.convert_dataset:main"
