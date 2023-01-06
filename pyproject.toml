@@ -3,12 +3,12 @@ requires = [ "setuptools>=61" ]
 
 [project]
 name = "pero-indexer"
-version = "0.0.1"
-# description = "Toolkit for advanced OCR of poor quality documents"
+version = "0.1.0"
+description = "Toolkit for information extraction from image documents"
 readme = "README.md"
 requires-python = ">=3.6"
 license = {file = "LICENSE"}
-# keywords = ["OCR", "Layout analysis", "handwriting recognition"]
+keywords = ["Information extraction", "Semi-structured data", "OCR"]
 
 authors = [
   {email = "hradis@fit.vutbr.cz", name = "Michal Hradiš"}
@@ -28,9 +28,9 @@ dependencies = [
 ]
 
 
-# [project.urls]
-# homepage = "https://pero.fit.vutbr.cz/"
-# repository = "https://github.com/DCGM/pero-ocr"
+[project.urls]
+homepage = "https://pero.fit.vutbr.cz/"
+repository = "https://github.com/DCGM/pero-indexer"
 
 [tool.setuptools]
 include-package-data = false
