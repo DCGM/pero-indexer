@@ -12,6 +12,7 @@ LABEL_TRANSLATIONS = {
     "Author": "Autor",
     "Title": "Název",
     "Original title": "Původní název",
+    "Original_title": "Původní název",
     "Publisher": "Vydavatel",
     "Pages": "Počet stran",
     "Series": "Série",
