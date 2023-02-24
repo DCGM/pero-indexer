@@ -36,8 +36,14 @@ def main() -> int:
         output = ""
 
         key, *alignments = line.split("\t")
+        key = key.strip()
 
-        ocr = load_ocr(key.strip(), txn)
+        if txn is None:
+            path = os.path.join(args.ocr, key)
+        else:
+            path = key
+
+        ocr = load_ocr(path, txn)
 
         for alignment in alignments:
             label, from_, to = alignment.split(" ")
